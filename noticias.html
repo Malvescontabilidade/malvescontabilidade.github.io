@@ -234,8 +234,7 @@
 
 // Cole aqui o link da planilha publicada como CSV
 // (Google Sheets > Arquivo > Compartilhar > Publicar na Web > CSV).
-// Enquanto estiver vazio, a página mostra as publicações de EXEMPLO lá embaixo.
-const LINK_PLANILHA = "";
+const LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUoUBqlTgb-JyRwy6vfrl6U6luqxp8rKdg9W3Uhv8wnxSHq9LLyrsPTEbT1l_cTy4iMTFh1KkRgugy/pub?gid=112928398&single=true&output=csv";
 
 // WhatsApp do escritório (só números, com 55 + DDD)
 const WHATSAPP = "5522999968700";
@@ -257,26 +256,8 @@ const CATEGORIAS = [
 // Publicações com até X dias ganham a etiqueta "NOVO"
 const DIAS_NOVO = 7;
 
-/* ============================================================
-   2) EXEMPLOS (aparecem só enquanto LINK_PLANILHA estiver vazio)
-   ============================================================ */
-const EXEMPLOS = [
-  { data: "06/11/2026", categoria: "Avisos do Escritório", titulo: "Bem-vindo à nossa página de notícias!",
-    texto: "A partir de agora, todas as novidades importantes para a sua empresa vão aparecer aqui.\n\nUse os assuntos ao lado para filtrar o que te interessa.",
-    link: "", imagem: "", fixado: "sim" },
-  { data: "05/11/2026", categoria: "Nota Fiscal", titulo: "[EXEMPLO] Sua empresa já emite nota fiscal?",
-    texto: "Texto de exemplo. Aqui entra a explicação: o que mudou, quem é afetado e o que o cliente precisa fazer.",
-    link: "", imagem: "", fixado: "" },
-  { data: "28/10/2026", categoria: "Reforma Tributária", titulo: "[EXEMPLO] O que muda para o Simples Nacional em 2027",
-    texto: "Texto de exemplo. Resuma em 3 a 5 linhas e, se quiser, coloque o link da fonte oficial no campo link.",
-    link: "https://www.gov.br/receitafederal", imagem: "", fixado: "" },
-  { data: "20/10/2026", categoria: "Trabalhista / 6x1", titulo: "[EXEMPLO] Escala 6x1: como está a discussão",
-    texto: "Texto de exemplo. Ideal para explicar o andamento da proposta e o impacto para quem tem funcionário.",
-    link: "", imagem: "", fixado: "" },
-  { data: "10/10/2026", categoria: "Sindicatos", titulo: "[EXEMPLO] Nova convenção coletiva do comércio",
-    texto: "Texto de exemplo. Informe o reajuste, a data-base e a partir de quando aplica na folha.",
-    link: "", imagem: "", fixado: "" },
-];
+// Sem publicações de exemplo: tudo vem do formulário/planilha.
+const EXEMPLOS = [];
 
 /* ============================================================
    3) DAQUI PRA BAIXO É O FUNCIONAMENTO (não precisa mexer)
@@ -354,9 +335,29 @@ function lerCSV(texto) {
     .map(l => Object.fromEntries(cab.map((k, i) => [k, (l[i] || "").trim()])));
 }
 
+// Aceita tanto a planilha montada à mão quanto as respostas do Google Formulário.
+// O título de cada pergunta só precisa CONTER a palavra-chave (ex.: "Título da notícia").
+const CAMPOS = [
+  ["titulo", ["titulo"]], ["texto", ["texto"]], ["categoria", ["categoria", "assunto"]],
+  ["link", ["link", "fonte"]], ["imagem", ["imagem", "foto"]], ["fixado", ["fixa"]],
+  ["publicar", ["publica"]], ["data", ["data da noticia", "carimbo", "data"]],
+];
+function padronizar(linha) {
+  const p = {};
+  const chaves = Object.keys(linha);
+  CAMPOS.forEach(([campo, palavras]) => {
+    for (const pal of palavras) {
+      const k = chaves.find(c => c === pal) || chaves.find(c => c.includes(pal));
+      if (k && (linha[k] || "").trim()) { p[campo] = linha[k]; break; }
+    }
+  });
+  return p;
+}
+
 function prepararPosts(lista) {
   return lista
-    .filter(p => p.titulo && norm(p.publicar) !== "nao")
+    .map(padronizar)
+    .filter(p => p.titulo && !norm(p.publicar).startsWith("nao"))
     .map((p, i) => ({
       ...p,
       id: slug(p.titulo) || "post-" + i,
