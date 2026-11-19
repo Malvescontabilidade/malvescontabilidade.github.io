@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
@@ -137,6 +137,7 @@ dl.money dd.sum{font-weight:700}
 .law b{color:var(--fg)}
 .aviso{font-size:13px;background:var(--orange-soft);border-left:3px solid var(--orange);border-radius:4px;padding:8px 10px;margin:0 0 12px}
 .aviso b{color:var(--fg)}
+.aviso.upd{background:var(--ok-soft);border-left-color:var(--ok)}
 .cctbox{display:flex;flex-direction:column;gap:2px}
 .cctbox .chk{margin-top:6px}
 .chk small{display:block;color:var(--muted);font-size:12px}
@@ -183,6 +184,7 @@ footer{font-size:12px;color:var(--muted);padding-block:0 30px}
     <section class="card">
       <h2>1. Regra nova (EC 141/2026)</h2>
       <p class="aviso"><b>EC 141 publicada em 16/10/2026.</b> As 42h e as 2 folgas valem a partir de <b>16/12/2026</b> (2 meses após a publicação). Até 15/12/2026 a escala antiga ainda é permitida, mas o simulador já calcula pela regra nova.</p>
+      <p class="aviso upd"><b>Atualizado em 19/11/2026.</b> <b>STF:</b> liminar do ministro Flávio Dino (ADIs 8.041 e 8.042, 12/11/2026) manteve 16/12/2026 e liberou 5 dias de até <b>8h24 sem hora extra</b> para quem não tiver acordo ou convenção coletiva até 15/12/2026. A decisão é provisória: o mérito será julgado no plenário do STF, ainda sem data. <b>Decreto do governo</b> previsto para 19/11/2026, para regulamentar a transição e o divisor da hora. O texto oficial ainda não estava publicado nesta atualização. Há notícias de que ele pode fixar o <b>divisor 200 já na etapa de 42h</b>: se confirmado, troque o divisor no item 2.</p>
       <div class="phases" role="group" aria-label="Etapa da regra nova">
         <button class="phase" data-ph="2" id="ph2"><b>42h · 2 folgas</b><span>16/12/2026 a 15/12/2027</span></button>
         <button class="phase" data-ph="3" id="ph3"><b>40h · 2 folgas</b><span>a partir de 16/12/2027</span></button>
@@ -200,16 +202,28 @@ footer{font-size:12px;color:var(--muted);padding-block:0 30px}
         <label class="f"><span id="valLbl">Salário mensal (R$)</span>
           <input type="number" id="valor" min="0" step="0.01" value="1900">
         </label>
+        <label class="f">Divisor da hora (mensalista)
+          <select id="divSel">
+            <option value="auto" selected>Proporcional: 210 (42h) / 200 (40h)</option>
+            <option value="200">200 em todas as etapas (se o decreto fixar)</option>
+          </select>
+        </label>
         <label class="f">Adicional de hora extra (%)
           <input type="number" id="adHE" min="50" step="1" value="50">
         </label>
       </div>
-      <p class="aviso"><b>Hora extra e flexibilizações conforme a norma coletiva.</b> Use o percentual da convenção da categoria (mínimo legal 50%, CF art. 7º, XVI). Hora extra de até 2h/dia e banco de horas de até 6 meses podem ser feitos por acordo individual escrito (CLT art. 59, caput e §5º). Já ampliar a jornada diária na transição, compensar folgas (6x1, 6x2) e banco de horas anual <b>só valem se a convenção autorizar</b>.</p>
+      <p class="aviso"><b>Hora extra e flexibilizações conforme a norma coletiva.</b> Use o percentual da convenção da categoria (mínimo legal 50%, CF art. 7º, XVI). Hora extra de até 2h/dia e banco de horas de até 6 meses podem ser feitos por acordo individual escrito (CLT art. 59, caput e §5º). Adiar a 2ª folga e banco de horas anual <b>só valem com convenção ou acordo coletivo</b>. A jornada de 8h24 na transição já está liberada pela liminar do STF, mesmo sem convenção.</p>
 
-      <h2 style="margin-top:18px">3. O que a convenção do cliente autoriza</h2>
+      <h2 style="margin-top:18px">3. Base da jornada e o que a convenção autoriza</h2>
       <div class="cctbox">
-        <label class="chk" id="ccWrap"><input type="checkbox" id="cct"><span><b>Ampliar a jornada diária na transição</b> para distribuir as 42h (até 8h24/dia em 5 dias). Sem isso, o limite diário é 8h. <small>EC 141, art. 7º</small></span></label>
-        <label class="chk"><input type="checkbox" id="cfolga"><span><b>Compensar folgas</b> (trabalhar 6 dias e compensar a 2ª folga depois, ex.: 6x1, 6x2). <small>EC 141, regime compensatório por norma coletiva</small></span></label>
+        <label class="f" id="ccWrap" style="margin-top:6px">Jornada de até 8h24/dia (5 × 8h24 = 42h) está amparada por:
+          <select id="baseAmp">
+            <option value="stf" selected>Liminar do STF (sem convenção): 5 dias de até 8h24, sem hora extra</option>
+            <option value="cct">Convenção ou acordo coletivo (EC 141, art. 7º)</option>
+            <option value="nao">Cálculo conservador: acima de 8h conta como hora extra</option>
+          </select>
+        </label>
+        <label class="chk"><input type="checkbox" id="cfolga"><span><b>Adiar a 2ª folga</b> (trabalhar 6 dias e tirar a folga depois, ex.: alta temporada). Pode adiar, nunca suprimir. <small>EC 141 + liminar do STF: prazo e forma definidos na convenção ou acordo coletivo</small></span></label>
         <label class="chk"><input type="checkbox" id="cbanco"><span><b>Banco de horas anual</b> (compensar em até 12 meses). <small>CLT art. 59, §2º</small></span></label>
       </div>
       <label class="f" style="margin-top:12px">Como as horas extras serão tratadas
@@ -263,13 +277,14 @@ footer{font-size:12px;color:var(--muted);padding-block:0 30px}
       <h2>Base legal usada</h2>
       <p><b>EC 141/2026</b> (DOU 16/10/2026): art. 7º, XIII da CF passa a 8h diárias e 40h semanais; inciso XV garante <b>2 dias de repouso remunerado</b>, um preferencialmente no domingo. Transição do art. 6º: 42h após 2 meses e 40h um ano depois.</p>
       <p><b>Sem redução de salário</b> (art. 2º da EC), inclusive pisos. Por isso a hora fica mais cara.</p>
-      <p><b>Divisor 210 / 200</b>: não está escrito na EC. É o entendimento majoritário pela lógica da Súmula 431 do TST (40h = 200). Confira a convenção da categoria.</p>
+      <p><b>STF, ADIs 8.041 e 8.042</b> (liminar do min. Flávio Dino, 12/11/2026): manteve 16/12/2026; sem acordo ou convenção até 15/12/2026, permite 5 dias de até 8h24 sem hora extra até 15/12/2027; a 2ª folga pode ser adiada por norma coletiva, nunca suprimida; 90 dias a partir de 16/12/2026 para renegociar cláusulas coletivas atingidas. O mérito vai ao plenário presencial, sem data.</p>
+      <p><b>Divisor 210 / 200</b>: não está na EC nem na liminar. O simulador usa 210 (42h) e 200 (40h), proporcional à Súmula 431 do TST. O decreto previsto para 19/11/2026 deve fixar o divisor, e há notícias de que pode ser 200 já na etapa de 42h. Confira o texto publicado e a convenção da categoria.</p>
       <p><b>CLT</b>: art. 59 (até 2h extras/dia), art. 66 (11h entre jornadas), art. 71 (intervalo de 1h acima de 6h; 15min de 4h a 6h), art. 73 (adicional noturno 20% e hora de 52min30s). Lei 605/49 e Súmula 172 TST (reflexo no DSR).</p>
-      <p><b>ME/EPP/MEI</b>: o art. 5º da EC só <b>permite</b> lei complementar com regras de transição. Enquanto ela não sair, as datas valem para todos.</p>
+      <p><b>ME/EPP/MEI</b>: o art. 5º da EC prevê lei complementar com regras de transição. Na liminar, o STF fez apelo ao Congresso para regulamentar o tema, sem tirar as 2 folgas nem o limite semanal. Enquanto ela não sair, as datas valem para todos.</p>
     </section>
   </div>
 </main>
-<footer class="wrap">Simulação de apoio. Não substitui a leitura da convenção coletiva da categoria nem a análise do caso concreto. Atualizado com a EC 141/2026 em out/2026.</footer>
+<footer class="wrap">Simulação de apoio. Não substitui a leitura da convenção coletiva da categoria nem a análise do caso concreto. Atualizado em 19/11/2026: EC 141/2026, liminar do STF nas ADIs 8.041/8.042 e decreto de regulamentação previsto para 19/11/2026.</footer>
 
 <script>
 const DAYS=["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
@@ -312,10 +327,10 @@ function nightMin(s,e){ // minutos entre 22h e 5h no intervalo [s,e) em minutos 
   return n;
 }
 function calc(){
-  const ph=state.ph, cct=$("cct").checked, cfolga=$("cfolga").checked, cbanco=$("cbanco").checked, heMode=$("heMode").value;
+  const baseAmp=$("baseAmp").value, ph=state.ph, cct=baseAmp!=="nao", cfolga=$("cfolga").checked, cbanco=$("cbanco").checked, heMode=$("heMode").value;
   const limSem= ph===1?44: ph===2?42:40;
   const limDia= (ph===2 && cct)? 8.4 : 8;
-  const divisor= ph===1?220: ph===2?210:200;
+  const divisor= $("divSel").value==="200"?200:(ph===1?220: ph===2?210:200);
   const restMin= ph===1?1:2;
   $("ccWrap").hidden = ph!==2;
 
@@ -352,8 +367,8 @@ function calc(){
   // checagens
   const C=[];
   const add=(lvl,t,s)=>C.push({lvl,t,s});
-  if(folgas<restMin && folgas>=1 && cfolga) add("warn",`Só ${folgas} folga na semana, compensada pela convenção`,"Válido só nos termos da cláusula: confira o prazo e a forma de compensar a 2ª folga. Guarde a cláusula no arquivo do cliente.");
-  else if(folgas<restMin) add("bad",`Só ${folgas} folga(s) na semana — exige ${restMin}`, folgas>=1?"EC 141/2026: 2 repousos semanais a partir de 16/12/2026. Trabalhar 6 dias só vale se a convenção autorizar compensar a folga (marque no item 3).":"Sem nenhum repouso semanal: irregular mesmo com convenção (Lei 605/49).");
+  if(folgas<restMin && folgas>=1 && cfolga) add("warn",`Só ${folgas} folga na semana, com a 2ª folga adiada pela convenção`,"Liminar do STF: a convenção ou acordo coletivo define quando a folga adiada é tirada, mas ela nunca pode ser suprimida. Confira a cláusula e guarde no arquivo do cliente.");
+  else if(folgas<restMin) add("bad",`Só ${folgas} folga(s) na semana — exige ${restMin}`, folgas>=1?"EC 141/2026: 2 repousos semanais a partir de 16/12/2026. Trabalhar 6 dias só vale se a convenção ou acordo coletivo autorizar adiar a folga (marque no item 3).":"Sem nenhum repouso semanal: irregular mesmo com convenção (Lei 605/49).");
   else add("ok",`${folgas} folgas na semana`, restMin===2?"Atende os 2 repousos remunerados.":"Atende o repouso semanal.");
   if(nDias>0 && !$("on6").checked) add("ok","Folga no domingo","Repouso preferencialmente aos domingos atendido.");
   else if(nDias>0 && $("mulher").checked) add("warn","Mulher trabalhando no domingo: folga dominical a cada 15 dias","CLT art. 386: escala de revezamento quinzenal, com pelo menos 1 domingo de folga a cada 2 semanas (2 domingos por mês). Monte a escala alternando os domingos.");
@@ -363,7 +378,11 @@ function calc(){
   const over2=work.filter(x=>x.horas>limDia+2+1e-9);
   const over=work.filter(x=>x.horas>limDia+1e-9 && x.horas<=limDia+2+1e-9);
   if(over2.length) add("bad",`Mais de 2h extras em: ${over2.map(x=>x.d).join(", ")}`,"CLT art. 59: no máximo 2h extras por dia.");
-  if(over.length) add("warn",`Jornada acima de ${hfmt(limDia)} em: ${over.map(x=>x.d).join(", ")}`, ph===2&&!cct?"Sem convenção autorizando a ampliação (item 3), o que passar de 8h é hora extra, não jornada normal. Hora extra de até 2h/dia pode ser por acordo individual escrito (CLT art. 59).":"O excesso diário é hora extra: acordo individual escrito basta (CLT art. 59).");
+  const cabe842 = ph===2 && baseAmp==="nao" && over.length && !over2.length && total<=42+1e-9 && work.every(x=>x.horas<=8.4+1e-9);
+  if(cabe842) add("warn",`Cálculo conservador: ${hfmt(exDia)} da escala de 8h24 contados como hora extra`,"Você escolheu o cálculo conservador. Pela liminar do STF (12/11/2026), 5 dias de até 8h24 sem convenção não geram hora extra sobre os 24 min. Troque a base no item 3 para aplicar a liminar.");
+  else if(over.length) add("warn",`Jornada acima de ${hfmt(limDia)} em: ${over.map(x=>x.d).join(", ")}`, ph===2&&!cct?"Sem base para ampliar a jornada (item 3), o que passar de 8h é hora extra, não jornada normal. Hora extra de até 2h/dia pode ser por acordo individual escrito (CLT art. 59).":"O excesso diário é hora extra: acordo individual escrito basta (CLT art. 59).");
+  if(ph===2 && baseAmp==="stf" && work.some(x=>x.horas>8+1e-9)) add("warn","Jornada de até 8h24 pela liminar do STF (provisória)","ADIs 8.041 e 8.042, decisão de 12/11/2026: sem acordo ou convenção até 15/12/2026, vale 5 dias de até 8h24 sem adicional de hora extra sobre os 24 min, até 15/12/2027. Decisão provisória: acompanhe o julgamento no plenário. Distribuição desigual (ex.: 9h em um dia) não está coberta.");
+  if(ph===2 && baseAmp==="cct" && work.some(x=>x.horas>8+1e-9)) add("ok","Jornada de até 8h24 amparada por norma coletiva","EC 141, art. 7º. Guarde a cláusula da convenção ou do acordo coletivo no arquivo do cliente.");
   if(heSem>0 && heMode==="banco12" && !cbanco) add("bad","Banco de horas anual sem autorização da convenção","CLT art. 59, §2º: banco de até 12 meses só por convenção ou acordo coletivo. Sem ela, use banco de até 6 meses por acordo individual escrito (§5º) ou pague as horas.");
   else if(heSem>0 && heMode!=="pago") add("warn",`Horas extras vão para o banco (${heMode==="banco6"?"até 6 meses":"até 12 meses"})`,"Se não forem compensadas no prazo, devem ser pagas com adicional. Na rescisão, o saldo é pago (CLT art. 59, §3º).");
   if(!over.length && !over2.length && nDias) add("ok",`Nenhum dia acima de ${hfmt(limDia)}`,"Limite diário respeitado.");
@@ -425,25 +444,27 @@ function calc(){
 document.querySelectorAll(".phase").forEach(b=>b.addEventListener("click",()=>{state.ph=+b.dataset.ph;document.querySelectorAll(".phase").forEach(x=>x.setAttribute("aria-pressed",x===b));calc();}));
 document.querySelectorAll(".presets button").forEach(b=>b.addEventListener("click",()=>applyPreset(b.dataset.pre)));
 $("tipo").addEventListener("change",()=>{const t=$("tipo").value;$("valLbl").textContent=t==="mensal"?"Salário mensal (R$)":t==="hora"?"Valor da hora (R$)":"Valor da diária (R$)";$("valor").value=t==="mensal"?1900:t==="hora"?9.05:95;calc();});
-["valor","adHE","cct","cfolga","cbanco","mulher"].forEach(id=>$(id).addEventListener("input",calc));
+["valor","adHE","cfolga","cbanco","mulher"].forEach(id=>$(id).addEventListener("input",calc));
+$("baseAmp").addEventListener("change",calc);
+$("divSel").addEventListener("change",calc);
 $("heMode").addEventListener("change",calc);
 
 const TIPS={
  muda:{t:"O que muda",cmp:[["Antes","44h por semana · 1 folga · escala 6x1 comum"],["Agora (EC 141)","42h e depois 40h · 2 folgas · fim da 6x1 como regra"]],
   l1:"<p>A partir de <b>16/12/2026</b> todo empregado CLT passa a ter <b>2 folgas por semana</b> e jornada máxima de <b>42h</b>. Em <b>16/12/2027</b> cai para <b>40h</b>. <b>O salário não pode diminuir.</b></p>",
-  l2:"<ul><li>EC 141/2026, publicada em 16/10/2026: muda o art. 7º, XIII e XV, da Constituição.</li><li>Art. 2º da EC: proibida qualquer redução de salário, inclusive de pisos.</li><li>Art. 5º: lei complementar <i>poderá</i> criar transição para MEI, ME e EPP. Enquanto não existir, vale para todos.</li></ul>",
+  l2:"<ul><li>EC 141/2026, publicada em 16/10/2026: muda o art. 7º, XIII e XV, da Constituição.</li><li>Art. 2º da EC: proibida qualquer redução de salário, inclusive de pisos.</li><li>Art. 5º: lei complementar para MEI, ME e EPP. O STF fez apelo ao Congresso para regulamentar. Enquanto não existir, vale para todos.</li><li>Liminar do STF (12/11/2026): manteve as datas e flexibilizou a transição. Decisão provisória.</li></ul>",
   l3:"<p>Pousada com recepcionista em 6x1 ganhando R$ 1.900: a partir de 16/12 ela passa a ter 2 folgas, continua ganhando R$ 1.900 e a pousada precisa reorganizar a escala ou contratar reforço.</p>"},
- jornada:{t:"Jornada",cmp:[["Limite por dia","8h (8h24 só com convenção, até 15/12/2027)"],["Limite por semana","42h até 15/12/2027 · 40h depois"]],
+ jornada:{t:"Jornada",cmp:[["Limite por dia","8h · até 8h24 em 5 dias na transição (liminar do STF ou convenção)"],["Limite por semana","42h até 15/12/2027 · 40h depois"]],
   l1:"<p>A jornada normal é de <b>até 8h por dia</b> e <b>42h por semana</b> (depois 40h). O padrão que fecha a conta é o <b>5x2</b>: 5 dias de trabalho, 2 de folga.</p>",
-  l2:"<ul><li>CF art. 7º, XIII (nova redação): 8h diárias e 40h semanais.</li><li>EC 141, art. 6º: 42h na transição.</li><li>EC 141, art. 7º: convenção pode ampliar a jornada diária para distribuir as 42h.</li><li>CLT art. 71: intervalo mínimo de 1h para quem trabalha mais de 6h.</li></ul>",
-  l3:"<p><b>Padrão antigo (até 15/12/2026):</b> seg a sex das 08h às 17h (1h de almoço) + sábado das 08h às 12h = <b>44h em 6 dias</b>, só 1 folga.</p><p><b>A partir de 16/12/2026 isso não cabe mais:</b> passa das 42h e falta a 2ª folga. Formas de adaptar:</p><ul><li><b>Tirar o sábado:</b> seg a sex 08h–17h = 40h. Folgas sáb e dom.</li><li><b>Tirar o sábado com convenção:</b> seg a sex 08h–17h24 = 42h.</li><li><b>Manter o sábado:</b> folgar um dia útil (ex.: trabalha ter a sáb, folga dom e seg) com 8h/dia = 40h.</li><li><b>Manter seg a sáb:</b> só se a convenção autorizar compensar a 2ª folga.</li></ul>"},
+  l2:"<ul><li>CF art. 7º, XIII (nova redação): 8h diárias e 40h semanais.</li><li>EC 141, art. 6º: 42h na transição.</li><li>EC 141, art. 7º: convenção pode ampliar a jornada diária para distribuir as 42h.</li><li>Liminar do STF (ADIs 8.041/8.042): sem convenção até 15/12/2026, 5 dias de até 8h24 sem hora extra sobre os 24 min, até 15/12/2027.</li><li>CLT art. 71: intervalo mínimo de 1h para quem trabalha mais de 6h.</li></ul>",
+  l3:"<p><b>Padrão antigo (até 15/12/2026):</b> seg a sex das 08h às 17h (1h de almoço) + sábado das 08h às 12h = <b>44h em 6 dias</b>, só 1 folga.</p><p><b>A partir de 16/12/2026 isso não cabe mais:</b> passa das 42h e falta a 2ª folga. Formas de adaptar:</p><ul><li><b>Tirar o sábado:</b> seg a sex 08h–17h = 40h. Folgas sáb e dom.</li><li><b>Tirar o sábado e usar as 42h:</b> seg a sex 08h–17h24 = 42h (liminar do STF ou convenção).</li><li><b>Manter o sábado:</b> folgar um dia útil (ex.: trabalha ter a sáb, folga dom e seg) com 8h/dia = 40h.</li><li><b>Manter seg a sáb:</b> só se a convenção ou acordo coletivo autorizar adiar a 2ª folga.</li></ul>"},
  folgas:{t:"Folgas",cmp:[["Antes","1 folga por semana (DSR)"],["Agora","2 folgas remuneradas, uma de preferência no domingo"]],
-  l1:"<p>Toda semana o funcionário tem direito a <b>2 dias de descanso pagos</b>. Trabalhar 6 dias só é possível se a <b>convenção coletiva autorizar compensar</b> a folga.</p>",
-  l2:"<ul><li>CF art. 7º, XV (nova redação): 2 repousos semanais remunerados.</li><li>Lei 605/49: repouso semanal remunerado.</li><li>Lei 10.101/2000, art. 6º: no comércio, folga no domingo pelo menos 1 vez a cada 3 semanas.</li><li><b>Mulher:</b> CLT art. 386, folga no domingo pelo menos a cada 15 dias (revezamento quinzenal). Não é folga a mais: é o mesmo número de folgas, com o domingo garantido com mais frequência.</li></ul>",
+  l1:"<p>Toda semana o funcionário tem direito a <b>2 dias de descanso pagos</b>. Trabalhar 6 dias só é possível se a <b>convenção ou acordo coletivo autorizar adiar</b> a 2ª folga, que nunca pode ser suprimida.</p>",
+  l2:"<ul><li>CF art. 7º, XV (nova redação): 2 repousos semanais remunerados.</li><li>Lei 605/49: repouso semanal remunerado.</li><li>Liminar do STF: norma coletiva pode adiar a 2ª folga (ex.: turismo, fim de ano), nunca suprimir.</li><li>Lei 10.101/2000, art. 6º: no comércio, folga no domingo pelo menos 1 vez a cada 3 semanas.</li><li><b>Mulher:</b> CLT art. 386, folga no domingo pelo menos a cada 15 dias (revezamento quinzenal). Não é folga a mais: é o mesmo número de folgas, com o domingo garantido com mais frequência.</li></ul>",
   l3:"<p>Restaurante em Búzios que abre de quarta a domingo: o garçom trabalha qua–dom e folga seg e ter. Atende as 2 folgas, mas o domingo precisa coincidir com a folga periodicamente.</p><p><b>Se for uma garçonete:</b> ela folga seg e ter, e em domingos alternados troca uma dessas folgas pelo domingo. Assim tem 2 domingos de folga por mês.</p>"},
  he:{t:"Hora extra",cmp:[["Hora normal (R$ 1.900)","Antes ÷220 = R$ 8,64 · agora ÷210 = R$ 9,05"],["Hora extra +50%","Antes R$ 12,95 · agora R$ 13,57"]],
   l1:"<p>Passou de 8h no dia ou do limite da semana, é <b>hora extra</b>: no máximo <b>2h por dia</b>, com adicional de <b>pelo menos 50%</b>, ou o percentual maior da convenção. Como o salário não cai e as horas diminuem, <b>a hora fica mais cara</b>.</p>",
-  l2:"<ul><li>CF art. 7º, XVI: adicional mínimo de 50%.</li><li>CLT art. 59: até 2h extras por dia, por acordo individual escrito.</li><li>Banco de horas: até 6 meses por acordo individual (§5º), anual só por convenção (§2º).</li><li>Divisor 210/200: entendimento pela Súmula 431 do TST, ainda não fixado em lei.</li><li>Súmula 172 do TST: hora extra habitual reflete no DSR.</li></ul>",
+  l2:"<ul><li>CF art. 7º, XVI: adicional mínimo de 50%.</li><li>CLT art. 59: até 2h extras por dia, por acordo individual escrito.</li><li>Banco de horas: até 6 meses por acordo individual (§5º), anual só por convenção (§2º).</li><li>Divisor 210/200: proporcional à Súmula 431 do TST. O decreto previsto para 19/11/2026 deve fixá-lo (pode ser 200 já na etapa de 42h): confira o texto publicado.</li><li>Liminar do STF: os 24 min da jornada de 8h24 na transição não são hora extra.</li><li>Súmula 172 do TST: hora extra habitual reflete no DSR.</li></ul>",
   l3:"<p>Funcionário trabalha 2h a mais em um dia: 2 × R$ 13,57 = <b>R$ 27,14</b>, mais o reflexo no DSR. Se for para o banco de horas e não compensar no prazo, paga com adicional.</p>"},
  noturno:{t:"Adicional noturno",cmp:[["Horário noturno","Das 22h às 5h (trabalho urbano)"],["O que muda com a EC","Nada na regra; só a hora base, que fica mais cara"]],
   l1:"<p>Quem trabalha entre <b>22h e 5h</b> recebe <b>20% a mais</b> por hora, e cada hora noturna vale <b>52min30s</b>. A EC 141 não mudou isso, mas como a hora normal subiu, o adicional também sobe.</p>",
